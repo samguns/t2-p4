@@ -35,7 +35,7 @@ int main()
 
   PID pid;
   // Initialize the pid variable.
-  pid.Init(0, 0, 0);
+  //pid.Init(0.18, 0, 0.18);
 
   Twiddle twiddle;
   twiddle.Init();
@@ -62,10 +62,19 @@ int main()
           * NOTE: Feel free to play around with the throttle and speed. Maybe use
           * another PID controller to control the speed!
           */
+//          pid.UpdateError(cte);
+//          steer_value = -pid.TotalError();
           twiddle.Process(ws, cte, 0.3);
           
           // DEBUG
-          std::cout << "CTE: " << cte << " Steering Value: " << steer_value << std::endl;
+//          std::cout << "CTE: " << cte << " Steering Value: " << steer_value << std::endl;
+//
+//          json msgJson;
+//          msgJson["steering_angle"] = steer_value;
+//          msgJson["throttle"] = 0.3;
+//          auto msg = "42[\"steer\"," + msgJson.dump() + "]";
+//          std::cout << msg << std::endl;
+//          ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
         }
       } else {
         // Manual driving

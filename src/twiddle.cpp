@@ -9,7 +9,7 @@
 
 #include "twiddle.h"
 
-#define TOLERENCE         0.2
+#define TOLERENCE         0.02
 
 #define MAX_TRIALS        200
 
@@ -29,12 +29,12 @@ using json = nlohmann::json;
 using namespace std;
 
 void Twiddle::Init() {
-  m_p[PARAMS_KP_IDX] = 0;
+  m_p[PARAMS_KP_IDX] = 0.2;
   m_p[PARAMS_KI_IDX] = 0;
-  m_p[PARAMS_KD_IDX] = 0;
-  m_dp[PARAMS_KP_IDX] = 1;
-  m_dp[PARAMS_KI_IDX] = 1;
-  m_dp[PARAMS_KD_IDX] = 1;
+  m_p[PARAMS_KD_IDX] = 0.2;
+  m_dp[PARAMS_KP_IDX] = 0.1;
+  m_dp[PARAMS_KI_IDX] = 0.1;
+  m_dp[PARAMS_KD_IDX] = 0.1;
   m_State = STATE_INIT_GUESS_BEST;
   m_Trials = 0;
   m_Error = 0;
@@ -66,12 +66,14 @@ void Twiddle::Process(uWS::WebSocket<uWS::SERVER>& ws, double cte, double thrott
 
         m_State = STATE_TWIDDLE_BEST;
         m_Trials = 0;
+        printf("%s[%d] m_BestError: %f\n", __func__, __LINE__, m_BestError);
       }
 
       break;
 
     case STATE_TWIDDLE_BEST:
       dp_sum = m_dp[PARAMS_KP_IDX] + m_dp[PARAMS_KI_IDX] + m_dp[PARAMS_KD_IDX];
+      printf("%s[%d] dp_sum: %f\n", __func__, __LINE__, dp_sum);
       if (dp_sum <= TOLERENCE) {
         /**
          * Reset PID controller and simulator
@@ -148,6 +150,9 @@ void Twiddle::twiddle_gains(double cte, double throttle) {
 
           m_TwiddleIdx++;
           m_TwiddleIdx %= PARAMS_LEN;
+          printf("%s[%d] m_BestError: %f\n", __func__, __LINE__, m_BestError);
+          printf("%s[%d] p: %f %f %f dp: %f %f %f\n", __func__, __LINE__,
+                 m_p[0], m_p[1], m_p[2], m_dp[0], m_dp[1], m_dp[2]);
         } else {
           m_p[m_TwiddleIdx] -= 2 * m_dp[m_TwiddleIdx];
           m_PID.Init(m_p[PARAMS_KP_IDX], m_p[PARAMS_KI_IDX], m_p[PARAMS_KD_IDX]);
@@ -174,6 +179,9 @@ void Twiddle::twiddle_gains(double cte, double throttle) {
           m_p[m_TwiddleIdx] += m_dp[m_TwiddleIdx];
           m_dp[m_TwiddleIdx] *= 0.9;
         }
+        printf("%s[%d] m_BestError: %f\n", __func__, __LINE__, m_BestError);
+        printf("%s[%d] p: %f %f %f dp: %f %f %f\n", __func__, __LINE__,
+               m_p[0], m_p[1], m_p[2], m_dp[0], m_dp[1], m_dp[2]);
 
         m_PID.Init(m_p[PARAMS_KP_IDX], m_p[PARAMS_KI_IDX], m_p[PARAMS_KD_IDX]);
         reset();
