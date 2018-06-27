@@ -1,5 +1,6 @@
 #include <uWS/uWS.h>
 #include <iostream>
+#include <fstream>
 #include "json.hpp"
 #include "PID.h"
 #include <math.h>
@@ -35,7 +36,7 @@ int main()
 
   PID pid;
   // Initialize the pid variable.
-  //pid.Init(0.18, 0, 0.18);
+  pid.Init(0.23, 0.002, 20);
 
   Twiddle twiddle;
   twiddle.Init();
@@ -62,6 +63,25 @@ int main()
           * NOTE: Feel free to play around with the throttle and speed. Maybe use
           * another PID controller to control the speed!
           */
+          std::ifstream params_file;
+          params_file.open("params.csv");
+          std::string Kp_str, Ki_str, Kd_str, reset;
+          double Kp, Ki, Kd;
+          while (params_file.good()) {
+            std::getline(params_file, Kp_str, ',');
+            std::getline(params_file, Ki_str, ',');
+            std::getline(params_file, Kd_str, ',');
+            std::getline(params_file, reset, ',');
+          }
+          Kp = std::stod(Kp_str);
+          Ki = std::stod(Ki_str);
+          Kd = std::stod(Kd_str);
+          if (0 == reset.compare("1")) {
+            pid.Init(Kp, Ki, Kd);
+            std::string msg = "42[\"reset\",{}]";
+            ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
+          }
+
 //          pid.UpdateError(cte);
 //          steer_value = -pid.TotalError();
           twiddle.Process(ws, cte, 0.3);
@@ -73,7 +93,6 @@ int main()
 //          msgJson["steering_angle"] = steer_value;
 //          msgJson["throttle"] = 0.3;
 //          auto msg = "42[\"steer\"," + msgJson.dump() + "]";
-//          std::cout << msg << std::endl;
 //          ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
         }
       } else {

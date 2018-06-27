@@ -11,7 +11,7 @@
 
 #define TOLERENCE         0.02
 
-#define MAX_TRIALS        200
+#define MAX_TRIALS        3500
 
 #define PARAMS_KP_IDX     0
 #define PARAMS_KI_IDX     1
@@ -29,9 +29,9 @@ using json = nlohmann::json;
 using namespace std;
 
 void Twiddle::Init() {
-  m_p[PARAMS_KP_IDX] = 0.2;
-  m_p[PARAMS_KI_IDX] = 0;
-  m_p[PARAMS_KD_IDX] = 0.2;
+  m_p[PARAMS_KP_IDX] = 0.23;
+  m_p[PARAMS_KI_IDX] = 0.002;
+  m_p[PARAMS_KD_IDX] = 20;
   m_dp[PARAMS_KP_IDX] = 0.1;
   m_dp[PARAMS_KI_IDX] = 0.1;
   m_dp[PARAMS_KD_IDX] = 0.1;
@@ -133,6 +133,8 @@ void Twiddle::twiddle_gains(double cte, double throttle) {
     case TWIDDLE_STATE_GAIN:
       m_p[m_TwiddleIdx] += m_dp[m_TwiddleIdx];
       m_PID.Init(m_p[PARAMS_KP_IDX], m_p[PARAMS_KI_IDX], m_p[PARAMS_KD_IDX]);
+      printf("TWIDDLE_STATE_GAIN p: %f %f %f dp: %f %f %f\n",
+             m_p[0], m_p[1], m_p[2], m_dp[0], m_dp[1], m_dp[2]);
       reset();
       m_Trials = 0;
       m_StateTwiddleGains = TWIDDLE_STATE_GAIN_ASCEND;
@@ -156,6 +158,8 @@ void Twiddle::twiddle_gains(double cte, double throttle) {
         } else {
           m_p[m_TwiddleIdx] -= 2 * m_dp[m_TwiddleIdx];
           m_PID.Init(m_p[PARAMS_KP_IDX], m_p[PARAMS_KI_IDX], m_p[PARAMS_KD_IDX]);
+          printf("%s[%d] p: %f %f %f dp: %f %f %f\n", __func__, __LINE__,
+                 m_p[0], m_p[1], m_p[2], m_dp[0], m_dp[1], m_dp[2]);
           reset();
 
           m_Trials = 0;
