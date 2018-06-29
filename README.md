@@ -24,13 +24,17 @@ The shortcomings of D component leads us to consider how far we're away from the
 ### 3. Describe how the final hyperparameters were chosen.
 I tried to use twiddle in the first place, but it's complicated to implement. And the fact that the vehicle has to run at lease two laps to accomplish a single twiddle loop made me seeking out other solutions. I searched the web and started my manual parameter tuning according to [this article](https://robotics.stackexchange.com/questions/167/what-are-good-strategies-for-tuning-pid-loops). Under the circumstance of this project, the simulator always starts at the targeting position. The vehicle has already been on the right track. It doesn't make sense to tune the Kp first. So I chose the method [Joe Baker](https://robotics.stackexchange.com/users/308/joe-baker) proposed. That is:
 >1. Set all gains to 0.
-2. Increase Kd until the system oscillates.
-3. Reduce Kd by a factor of 2-4.
-4. Set Kp to about 1% of Kd.
-5. Increase Kp until oscillations start.
-6. Decrease Kp by a factor of 2-4.
-7. Set Ki to about 1% of Kp.
-8. Increase Ki until oscillations start.
-9. Decrease Ki by a factor of 2-4.
+>2. Increase Kd until the system oscillates.
+>3. Reduce Kd by a factor of 2-4.
+>4. Set Kp to about 1% of Kd.
+>5. Increase Kp until oscillations start.
+>6. Decrease Kp by a factor of 2-4.
+>7. Set Ki to about 1% of Kp.
+>8. Increase Ki until oscillations start.
+>9. Decrease Ki by a factor of 2-4.
 
-I ended up with the hyperparameters `Kp: 0.23`, `Ki: 0.002` and `Kd: 20`.
+I then wrote a piece of code (line 66 to line 83 in main.cpp) to tune parameters based on the method above in a interactive way. Without much effort I ended up with the hyperparameters `Kp: 0.23`, `Ki: 0.002` and `Kd: 20`.
+
+On a second thought, it might be possible to use twiddle in tuning hyperparameters in this project. I could start twiddle that doesn't necessarily have to complete a full lap, which is to set a initial testing track range, tune the parameters. By the time the vehicle maintains itself on the right track, increments the test range until it covers a full lap.
+
+I saw some papers published on the web mentioning an online parameter tuning by Neural Network, this is interesting and I'm curious to find out if I could apply it in this project.

@@ -24,3 +24,4 @@ endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 add_executable(pid ${sources})
 
 target_link_libraries(pid z ssl uv uWS)
+file(COPY src/params.csv DESTINATION ./)
